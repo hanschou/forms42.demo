@@ -1,0 +1,33 @@
+FilterEditor
+
+Preauthenticated
+DateInterval
+connect to pool, set pool secret
+
+Cyclic master detail
+
+tabindex -> flyt ?
+
+*** Jonas ***
+
+size ud af UsernamePassword
+relative i left menu
+Non transparent windows
+
+*************
+
+Demo:
+
+Tags: Heading
+Countries: from=
+Locations: ListOfValues, search on countries
+
+MasterDetail:
+	Dates,
+	QueryEditor,
+	Concurrency,
+	ReturnOnInsert,
+	Row-warning for salary
+
+Employess:
+PhoneBook: Membased, Sorting

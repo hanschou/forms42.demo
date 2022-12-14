@@ -1,0 +1,59 @@
+<include src="/html/formheader"></include>
+
+<!-- Start width -->
+<div style="width: 1000px;"></div>
+
+<div class="form" style="display:flex; flex-wrap: wrap;">
+	<div >
+		<table class="block">
+			<tr>
+				<th></th>
+				<th>First Name</th>
+				<th>Last Name</th>
+				<th>Email</th>
+				<th>Phone</th>
+			</tr>
+			<tr class="row" foreach="row in 1..5">
+				<td class="indicator"><span from="employees" row="$row" type="row-indicator"></span></td>
+				<td><input name="first_name" 		from="Employees" row="$row" size="10" initcap></td>
+				<td><input name="last_name" 		from="Employees" row="$row" size="10" initcap></td>
+				<td><input name="email" 			from="Employees" row="$row" size="32"></td>
+				<td><input name="phone_number" 	from="Employees" row="$row" size="12"></td>
+			</tr>
+		</table>
+	</div>
+
+	<div style="display:flex; align-items: stretch;">
+		<table class="block" style="display:flex; align-items: center;">
+			<tr>
+				<td>Salary</td>
+				<td>
+					<input name="salary" from="Employees" size="8" integer>
+				</td>
+			</tr>
+			<tr>
+				<td>Hire Date</td>
+				<td>
+					<input name="hire_date" from="Employees" date>
+					<span onclick="this.showDatePicker('Employees','hire_date')">&#128197;</span>
+				</td>
+			</tr>
+			<tr>
+				<td>Job</td>
+				<td style="display:inline-flex">
+					<input name="job_id" from="Employees" size="8" upper>
+					<input name="job_title" from="Employees" size="20" derived readonly query="false">
+					<span onclick="this.showListOfValues('Employees','job_id')">&#x2807;</span>
+				</td>
+			</tr>
+			<tr>
+				<td>Department</td>
+				<td style="display:inline-flex">
+					<input name="department_id" from="Employees" size="10" integer>
+					<input name="department_name" from="Employees" size="20" derived readonly query="false">
+					<span onclick="this.showListOfValues('Employees','department_id')">&#x2807;</span>
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>
