@@ -1,28 +1,39 @@
 /*
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 3 only, as
- * published by the Free Software Foundation.
+  MIT License
 
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
- */
+  Copyright © 2023 Alex Høffner
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+  and associated documentation files (the “Software”), to deal in the Software without
+  restriction, including without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all copies or
+  substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+  BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+  DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 
 import { Minimized } from './Minimized';
-import { Menu } from './menu/menuLeft/Menu';
-import { Help } from './menu/menuRight/Help';
-import { TopBar } from './menu/menuTop/TopBar';
+
 import { FormHeader } from './fragments/FormHeader';
 import { PageHeader } from './fragments/PageHeader';
 import { PageFooter } from './fragments/PageFooter';
+
+import { Menu as TopMenu } from './menus/topmenu/Menu';
+import { Menu as LeftMenu } from './menus/leftmenu/Menu';
 
 import { Fields } from './fields/Fields';
 import { Jobs } from './forms/jobs/Jobs';
 import { Countries } from './forms/countries/Countries';
 import { Locations } from './forms/locations/Locations';
 import { Employees } from './forms/employees/Employees';
+import { Departments } from './forms/departments/Departments';
 import { MasterDetail } from './forms/masterdetail/MasterDetail';
 import { PhoneBookMembased } from './forms/phonenook/PhoneBookMembased';
 
@@ -40,6 +51,7 @@ import { FormsPathMapping, FormsModule as FormsCoreModule, KeyMap, FormEvent, Ev
 		{class: Countries, path: "/forms/countries"},
 		{class: Locations, path: "/forms/locations"},
 		{class: Employees, path: "/forms/employees"},
+		{class: Departments, path: "/forms/departments"},
 		{class: MasterDetail, path: "/forms/masterdetail"},
 
 		{class: PhoneBookMembased, path: "/forms/phonebook"},
@@ -54,9 +66,8 @@ import { FormsPathMapping, FormsModule as FormsCoreModule, KeyMap, FormEvent, Ev
 
 export class FormsModule extends FormsCoreModule
 {
-	public menu:Menu = null;
-	public help:Help =null;
-	public topBar:TopBar = null;
+	public topmenu:TopMenu = null;
+	public leftmenu:LeftMenu = null;
 
 	public list:Minimized = null;
 	public static DATABASE:Connection = null;
@@ -67,6 +78,7 @@ export class FormsModule extends FormsCoreModule
 	private locations:KeyMap = new KeyMap({key: 'L', ctrl: true});
 	private phonebook:KeyMap = new KeyMap({key: 'P', ctrl: true});
 	private employees:KeyMap = new KeyMap({key: 'E', ctrl: true});
+	private departments:KeyMap = new KeyMap({key: 'D', ctrl: true});
 	private masterdetail:KeyMap = new KeyMap({key: 'M', ctrl: true});
 
 	constructor()
@@ -80,9 +92,8 @@ export class FormsModule extends FormsCoreModule
 		this.list = new Minimized();
 
 		// Menues
-		this.menu = new Menu();
-		this.topBar = new TopBar();
-		this.help = new Help();
+		this.topmenu = new TopMenu();
+		this.leftmenu = new LeftMenu();
 
 		this.OpenURLForm();
 		this.updateKeyMap(keymap);
@@ -92,6 +103,7 @@ export class FormsModule extends FormsCoreModule
 
 		FormsModule.DATABASE = new Connection("http://localhost:9002");
 
+		this.addEventListener(this.close,{type: EventType.Key, key: keymap.close});
 		this.addEventListener(this.login,{type: EventType.Key, key: keymap.login});
 
 		this.addEventListener(this.open,
@@ -102,6 +114,7 @@ export class FormsModule extends FormsCoreModule
 			{type:EventType.Key,key:this.locations},
 			{type:EventType.Key,key:this.phonebook},
 			{type:EventType.Key,key:this.employees},
+			{type:EventType.Key,key:this.departments},
 			{type:EventType.Key,key:this.masterdetail}
 		]);
 	}
@@ -116,6 +129,9 @@ export class FormsModule extends FormsCoreModule
 
 		if (event.key == this.employees)
 			this.showform(Employees);
+
+		if (event.key == this.departments)
+			this.showform(Departments);
 
 		if (event.key == this.countries)
 			this.showform(Countries);
@@ -156,13 +172,23 @@ export class FormsModule extends FormsCoreModule
 		return(FormsModule.DATABASE.disconnect());
 	}
 
+	public async close() : Promise<boolean>
+	{
+		let form:Form = this.getCurrentForm();
+		if (form != null) return(form.close());
+		return(true);
+	}
+
 	private async onLogon(event:FormEvent) : Promise<boolean>
 	{
 		let form:UsernamePassword = event.form as UsernamePassword;
 		this.removeEventListener(this.logontrg);
 
 		if (form.accepted && form.username && form.password)
-			FormsModule.DATABASE.connect(form.username,form.password);
+		{
+			if (!await FormsModule.DATABASE.connect(form.username,form.password))
+				this.login();
+		}
 
 		return(true);
 	}
@@ -170,5 +196,6 @@ export class FormsModule extends FormsCoreModule
 
 export class keymap extends KeyMap
 {
+	public static close:KeyMap = new KeyMap({key: 'w', ctrl: true});
 	public static login:KeyMap = new KeyMap({key: 'l', ctrl: true});
 }

@@ -12,7 +12,7 @@
 			<th>Manager</th>
 			<th>Location</th>
 		</tr>
-		<tr class="row" foreach="row in 1..3">
+		<tr class="row" foreach="row in 0..2">
 			<td class="indicator"><span from="Departments" row="$row" type="row-indicator"></span></td>
 
 			<td><input name="department_id" 		from="Departments" row="$row" size="6"  integer></td>
@@ -28,18 +28,42 @@
 		<table class="block">
 			<tr class="row">
 				<th></th>
-				<th onclick="this.sort('emp','first_name')"   >First Name</th>
-				<th onclick="this.sort('emp','last_name')"    >Last Name</th>
-				<th onclick="this.sort('emp','email')"		    >Email</th>
-				<th onclick="this.sort('emp','phone_number')" >Phone</th>
+				<th>
+					<label for="fn0" tabindex="0" draggable="true"
+						onclick="this.sort('emp','first_name')"
+						ondragstart="this.startFieldDragging()">
+						First Name
+					</label>
+				</th>
+				<th>
+					<label for="ln0" tabindex="1" draggable="true"
+						onclick="this.sort('emp','last_name')"
+						ondragstart="this.startFieldDragging()">
+						Last Name
+					</label>
+				</th>
+				<th>
+					<label for="em0" tabindex="2" draggable="true"
+						onclick="this.sort('emp','email')"
+						ondragstart="this.startFieldDragging()">
+						Email
+					</label>
+				</th>
+				<th>
+					<label for="ph0" tabindex="3" draggable="true"
+						onclick="this.sort('emp','phone_number')"
+						ondragstart="this.startFieldDragging()">
+						Phone
+					</label>
+				</th>
 			</tr>
-			<tr class="row" foreach="row in 1..5">
+			<tr class="row" foreach="row in 0..4">
 				<td class="indicator"><span from="Employees" row="$row" type="row-indicator"></span></td>
 
-				<td><input name="first_name" 		from="Employees" row="$row" size="10" initcap></td>
-				<td><input name="last_name" 		from="Employees" row="$row" size="10" initcap></td>
-				<td><input name="email" 			from="Employees" row="$row" size="32"></td>
-				<td><input name="phone_number" 	from="Employees" row="$row" size="12"></td>
+				<td><input id="fn$row" 	name="first_name" 	from="Employees" row="$row" size="10" initcap></td>
+				<td><input id="ln$row" 	name="last_name" 		from="Employees" row="$row" size="10" initcap></td>
+				<td><input id="em$row" 	name="email" 			from="Employees" row="$row" size="32"></td>
+				<td><input id="ph$row" 	name="phone_number" 	from="Employees" row="$row" size="12"></td>
 			</tr>
 		</table>
 	</div>

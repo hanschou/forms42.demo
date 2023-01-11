@@ -1,18 +1,9 @@
 FilterEditor
-
-Preauthenticated
-DateInterval
-connect to pool, set pool secret
-
 Cyclic master detail
-
-tabindex -> flyt ?
+find . -name '*.php' | xargs wc -l
 
 *** Jonas ***
 
-size ud af UsernamePassword
-relative i left menu
-Non transparent windows
 
 *************
 
@@ -24,10 +15,12 @@ Locations: ListOfValues, search on countries
 
 MasterDetail:
 	Dates,
+	Sorting,
+	Swap Fields,
 	QueryEditor,
 	Concurrency,
 	ReturnOnInsert,
 	Row-warning for salary
 
 Employess:
-PhoneBook: Membased, Sorting
+PhoneBook: Membased

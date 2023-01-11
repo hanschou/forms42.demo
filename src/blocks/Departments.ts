@@ -1,19 +1,30 @@
 /*
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 3 only, as
- * published by the Free Software Foundation.
+  MIT License
 
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
- */
+  Copyright © 2023 Alex Høffner
 
-import { Employees } from "../datasources/database/Employees";
-import { Locations } from "../datasources/database/Locations";
+  Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+  and associated documentation files (the “Software”), to deal in the Software without
+  restriction, including without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all copies or
+  substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+  BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+  DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+import { Locations as LocationBlock } from "./Locations";
+import { Employees as EmployeeBlock } from "./Employees";
+import { Employees as EmployeeTable} from "../datasources/database/Employees";
+import { Locations as LocationTable } from "../datasources/database/Locations";
 import { Departments as DepartmentTable } from "../datasources/database/Departments";
-import { BindValue, Block, Filter, Filters, FilterStructure, Form, Key, ListOfValues } from "forms42core";
+import { BindValue, Block, EventType, Filter, Filters, FilterStructure, Form, formevent, ListOfValues } from "forms42core";
 
 export class Departments extends Block
 {
@@ -23,38 +34,111 @@ export class Departments extends Block
 		this.datasource = new DepartmentTable();
 	}
 
-	public getPrimaryKey() : Key
+	@formevent({type: EventType.OnFetch})
+	public async getDerivedFields() : Promise<boolean>
 	{
-		return(new Key(this.name,"department_id"));
+		let id:number = null;
+		let field:string = null;
+		let manager:string = null;
+		let location:string = null;
+
+		field = "manager";
+		if (this.getFieldNames().includes(field))
+		{
+			id = this.getValue("manager_id");
+
+			if (id != null)
+				manager = await EmployeeTable.getName(id);
+
+			this.setValue(field,manager);
+		}
+
+		field = "location";
+		if (this.getFieldNames().includes(field))
+		{
+			id = this.getValue("loc_id");
+
+			if (id != null)
+				location = await LocationTable.getLocation(id);
+
+			this.setValue(field,location);
+		}
+
+		return(true);
 	}
 
-	public async lookupManager(field:string) : Promise<boolean>
+	@formevent({type: EventType.WhenValidateField, field: "manager_id"})
+	public async validateManager() : Promise<boolean>
 	{
 		let id:number = null;
 		let manager:string = null;
+		let field:string = "manager";
 
 		id = this.getValue("manager_id");
 
 		if (id != null)
-			manager = await Employees.getName(id);
+		{
+			manager = await EmployeeTable.getName(id);
 
-		this.setValue(field,manager);
+			if (this.getFieldNames().includes(field))
+				this.setValue(field,manager);
+
+			if (manager == null && !this.queryMode())
+			{
+				this.warning("Invalid manager id","Departments");
+				return(false);
+			}
+		}
+		else
+		{
+			if (this.getFieldNames().includes(field))
+				this.setValue(field,manager);
+		}
+
 		return(true);
 	}
 
-	public async lookupLocation(field:string) : Promise<boolean>
+	@formevent({type: EventType.WhenValidateField, field: "loc_id"})
+	public async validateLocation() : Promise<boolean>
 	{
 		let id:number = null;
 		let location:string = null;
+		let field:string = "location";
 
 		id = this.getValue("loc_id");
 
 		if (id != null)
-			location = await Locations.getLocation(id);
+		{
+			location = await LocationTable.getLocation(id);
 
-		this.setValue(field,location);
+			if (this.getFieldNames().includes(field))
+				this.setValue(field,location);
+
+			if (location == null && !this.queryMode())
+			{
+				this.warning("Invalid location id","Departments");
+				return(false);
+			}
+		}
+		else
+		{
+			if (this.getFieldNames().includes(field))
+				this.setValue(field,location);
+		}
+
 		return(true);
 	}
+
+	public setLocationLov(fields:string|string[]) : void
+	{
+		this.setListOfValues(LocationBlock.getLocationLov(),fields);
+	}
+
+	public setManagerLov(fields:string|string[]) : void
+	{
+		this.setListOfValues(EmployeeBlock.getManagerLov(),fields);
+	}
+
 
 	public static getDepartmentLov() : ListOfValues
 	{
@@ -82,11 +166,5 @@ export class Departments extends Block
 		}
 
 		return(lov);
-	}
-
-	public static async getTitle(id:string) : Promise<string>
-	{
-		if (id == null) return(null);
-		return(DepartmentTable.getTitle(id));
 	}
 }

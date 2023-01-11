@@ -1,20 +1,31 @@
 /*
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 3 only, as
- * published by the Free Software Foundation.
+  MIT License
 
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
- */
+  Copyright © 2023 Alex Høffner
 
+  Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+  and associated documentation files (the “Software”), to deal in the Software without
+  restriction, including without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all copies or
+  substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+  BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+  DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+import { Jobs as JobBlock} from "./Jobs";
 import { WorkDays } from '../dates/WorkDays';
-import { Jobs } from '../datasources/database/Jobs';
-import { Departments } from '../datasources/database/Departments';
+import { Departments as DepartmentBlock} from "./Departments";
+import { Jobs as JobTable } from '../datasources/database/Jobs';
 import { Employees as EmployeeTable } from "../datasources/database/Employees";
-import { BindValue, Block, EventType, FieldProperties, Filter, Filters, FilterStructure, Form, FormEvent, Key, ListOfValues } from "forms42core";
+import { Departments as DepartmentTable } from '../datasources/database/Departments';
+import { BindValue, Block, DatabaseResponse, EventType, FieldProperties, Filter, Filters, FilterStructure, Form, formevent, FormEvent, ListOfValues } from "forms42core";
 
 export class Employees extends Block
 {
@@ -25,39 +36,51 @@ export class Employees extends Block
 		this.setDateConstraint(new WorkDays(),"hire_date");
 	}
 
-	public getDepartmentsForeignKey() : Key
+	@formevent({type: EventType.OnNewRecord})
+	public async setDefaults() : Promise<boolean>
 	{
-		return(new Key(this.name,"department_id"));
-	}
+		let today:Date = new Date();
+		today.setHours(0,0,0,0);
 
-	public async lookupJob(field:string) : Promise<boolean>
-	{
-		let code:string = null;
-		let title:string = null;
-
-		code = this.getValue("job_id");
-
-		if (code != null)
-			title = await Jobs.getTitle(code);
-
-		this.setValue(field,title);
+		this.setValue("hire_date",today);
 		return(true);
 	}
 
-	public async lookupDepartment(field:string) : Promise<boolean>
+	@formevent({type: EventType.OnFetch})
+	public async getDerivedFields() : Promise<boolean>
 	{
 		let code:string = null;
 		let title:string = null;
+		let field:string = null;
 
-		code = this.getValue("department_id");
+		field = "job_title";
 
-		if (code != null)
-			title = await Departments.getTitle(code);
+		if (this.getFieldNames().includes(field))
+		{
+			code = this.getValue("job_id");
 
-		this.setValue(field,title);
+			if (code != null)
+				title = await JobTable.getTitle(code);
+
+			this.setValue(field,title);
+		}
+
+		field = "department_name";
+
+		if (this.getFieldNames().includes(field))
+		{
+			code = this.getValue("department_id");
+
+			if (code != null)
+				title = await DepartmentTable.getTitle(code);
+
+			this.setValue(field,title);
+		}
+
 		return(true);
 	}
 
+	@formevent({type: EventType.WhenValidateField, field: "salary"})
 	public async validateSalary() : Promise<boolean>
 	{
 		let code:string = this.getValue("job_id");
@@ -66,11 +89,11 @@ export class Employees extends Block
 		if (code == null || salary == null)
 			return(true);
 
-		let limit:number[] = await Jobs.getSalaryLimit(code);
+		let limit:number[] = await JobTable.getSalaryLimit(code);
 
-		if (salary < limit[0]/2 || salary > 2*limit[1])
+		if (salary < limit[0]*0.75 || salary > 1.25*limit[1])
 		{
-			this.warning("Salary is out of range ("+(limit[0]/2)+" - "+(2*limit[1])+" ) ","Validate Salary");
+			this.warning("Salary is out of range ("+(limit[0]*0.75)+" - "+(1.25*limit[1])+" ) ","Validate Salary");
 			return(false);
 		}
 
@@ -98,24 +121,26 @@ export class Employees extends Block
 		return(true);
 	}
 
-	public async validateJob(event:FormEvent, field?:string) : Promise<boolean>
+	@formevent({type: EventType.WhenValidateField, field: "job_id"})
+	public async validateJob(event:FormEvent) : Promise<boolean>
 	{
 		let success:boolean = true;
+		let field:string = "job_title";
 		let code:string = this.getValue("job_id");
 
 		if (code == null)
 			return(false);
 
-		let title:string = await Jobs.getTitle(code);
+		let title:string = await JobTable.getTitle(code);
 
-		if (field)
+		if (this.getFieldNames().includes(field))
 			this.setValue(field,title);
 
 		if (event.type == EventType.WhenValidateField && !this.queryMode())
 		{
 			if (title == null)
 			{
-				this.form.warning("Invalid job code","Validation");
+				this.form.warning("Invalid job code","Employees");
 				return(false);
 			}
 
@@ -125,22 +150,24 @@ export class Employees extends Block
 		return(success);
 	}
 
-	public async validateDepartment(event:FormEvent, field?:string) : Promise<boolean>
+	@formevent({type: EventType.WhenValidateField, field: "department_id"})
+	public async validateDepartment(event:FormEvent) : Promise<boolean>
 	{
+		let field:string = "department_name";
 		let code:string = this.getValue("department_id");
-		let title:string = await Departments.getTitle(code);
+		let title:string = await DepartmentTable.getTitle(code);
 
 		if (code == null)
 			return(false);
 
-		if (field)
+		if (this.getFieldNames().includes(field))
 			this.setValue(field,title);
 
 		if (event.type == EventType.WhenValidateField && !this.queryMode())
 		{
 			if (title == null)
 			{
-				this.form.warning("Invalid Depatment Id","Validation");
+				this.form.warning("Invalid Department Id","Employees");
 				return(false);
 			}
 		}
@@ -148,9 +175,27 @@ export class Employees extends Block
 		return(true);
 	}
 
+	@formevent({type: EventType.PostInsert})
+	public async setPrimaryKey() : Promise<boolean>
+	{
+		let response:DatabaseResponse = this.getRecord().response;
+		this.setValue("employee_id",response.getValue("employee_id"));
+		return(true);
+	}
+
+	public setJobLov(fields:string|string[]) : void
+	{
+		this.setListOfValues(JobBlock.getJobLov(),fields);
+	}
+
+	public setDepartmentLov(fields:string|string[]) : void
+	{
+		this.setListOfValues(DepartmentBlock.getDepartmentLov(),fields);
+	}
+
 	public static getManagerLov() : ListOfValues
 	{
-		let source:Jobs = null;
+		let source:JobTable = null;
 		let bindvalues:BindValue[] = [];
 		let filter:FilterStructure = null;
 

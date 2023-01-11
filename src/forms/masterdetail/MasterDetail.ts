@@ -1,23 +1,31 @@
 /*
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 3 only, as
- * published by the Free Software Foundation.
+  MIT License
 
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
- */
+  Copyright © 2023 Alex Høffner
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+  and associated documentation files (the “Software”), to deal in the Software without
+  restriction, including without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all copies or
+  substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+  BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+  DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 
 import content from './MasterDetail.html';
 
-import { Jobs } from '../../blocks/Jobs';
+import { Key } from 'forms42core';
 import { BaseForm } from "../../BaseForm";
+import { Sorter } from '../../utils/Sorter';
 import { Employees } from "../../blocks/Employees";
-import { Locations } from '../../blocks/Locations';
 import { Departments } from '../../blocks/Departments';
-import { DatabaseResponse, EventType, formevent, FormEvent } from "forms42core";
 
 
 export class MasterDetail extends BaseForm
@@ -25,97 +33,29 @@ export class MasterDetail extends BaseForm
 	private emp:Employees = new Employees(this,"Employees");
 	private dept:Departments = new Departments(this,"Departments");
 
-	private empsort:{column:string, asc:boolean} = {column: "last_name", asc: true};
-	private deptsort:{column:string, asc:boolean} = {column: "department_id", asc: true};
+	private empsort:Sorter = new Sorter(this.emp,"last_name");
+	private deptsort:Sorter = new Sorter(this.dept,"department_id");
 
 	constructor()
 	{
 		super(content);
-		this.title = "Employees";
+		this.title = "Departments/Employees";
 
-		this.dept.setListOfValues(Employees.getManagerLov(),"manager");
-		this.dept.setListOfValues(Locations.getLocationLov(),"location");
+		this.dept.setManagerLov("manager");
+		this.dept.setLocationLov("location");
 
-		this.emp.setListOfValues(Jobs.getJobLov(),["job_id","job_title"]);
-		this.emp.setListOfValues(Departments.getDepartmentLov(),["department_id","department_name"]);
+		this.emp.setJobLov(["job_id","job_title"]);
+		this.emp.setDepartmentLov(["department_id","department_name"]);
 
-		this.link(this.dept.getPrimaryKey(),this.emp.getDepartmentsForeignKey());
-	}
+		let empkey:Key = new Key("employees","department_id");
+		let deptkey:Key = new Key("departments","department_id");
 
-	@formevent({type: EventType.OnFetch})
-	public async getDerivedFields(event:FormEvent) : Promise<boolean>
-	{
-		if (event.block == "employees")
-		{
-			await this.emp.lookupJob("job_title");
-		}
-		else if (event.block == "departments")
-		{
-			await this.dept.lookupManager("manager");
-			await this.dept.lookupLocation("location");
-		}
-
-		return(true);
-	}
-
-	@formevent({type: EventType.WhenValidateField, block: "departments", field: "manager_id"})
-	public async validateManager() : Promise<boolean>
-	{
-		await this.dept.lookupManager("manager");
-		return(true);
-	}
-
-	@formevent({type: EventType.WhenValidateField, block: "departments", field: "loc_id"})
-	public async validateLocation() : Promise<boolean>
-	{
-		await this.dept.lookupLocation("location");
-		return(true);
-	}
-
-	@formevent({type: EventType.OnNewRecord, block: "employees"})
-	public async setDefaults() : Promise<boolean>
-	{
-		this.emp.setValue("hire_date",new Date());
-		return(true);
-	}
-
-	@formevent({type: EventType.WhenValidateField, block: "employees", field: "salary"})
-	public async validateSalary() : Promise<boolean>
-	{
-		return(this.emp.validateSalary());
-	}
-
-	@formevent({type: EventType.WhenValidateField, block: "employees", field: "job_id"})
-	public async validateJob(event:FormEvent) : Promise<boolean>
-	{
-		return(this.emp.validateJob(event,"job_title"));
-	}
-
-	@formevent({type: EventType.PostInsert, block: "employees"})
-	public async setPrimaryKey() : Promise<boolean>
-	{
-		let response:DatabaseResponse = this.emp.getRecord().response;
-		this.emp.setValue("employee_id",response.getValue("employee_id"));
-		return(true);
+		this.link(deptkey,empkey);
 	}
 
 	public sort(block:string, field:string) : void
 	{
-		if (block == "dept" && !this.dept.empty())
-		{
-			if (field == this.deptsort.column) this.deptsort.asc = !this.deptsort.asc;
-			else 										  this.deptsort = {column: field, asc: true};
-
-			this.dept.datasource.sorting = this.deptsort.column + " " + (this.deptsort.asc ? "asc" : "desc");
-			this.dept.reQuery();
-		}
-		else if (block == "emp" && !this.emp.empty())
-		{
-			if (field == this.empsort.column) this.empsort.asc = !this.empsort.asc;
-			else 										 this.empsort = {column: field, asc: true};
-
-			this.emp.datasource.sorting = this.empsort.column + " " + (this.empsort.asc ? "asc" : "desc");
-			this.emp.reQuery();
-		}
+		if (block == "emp") this.empsort.column = field;
+		if (block == "dept") this.deptsort.column = field;
 	}
 }

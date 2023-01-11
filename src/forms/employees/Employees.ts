@@ -1,26 +1,34 @@
 /*
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 3 only, as
- * published by the Free Software Foundation.
+  MIT License
 
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
- */
+  Copyright © 2023 Alex Høffner
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+  and associated documentation files (the “Software”), to deal in the Software without
+  restriction, including without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all copies or
+  substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+  BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+  DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 
 import content from './Employees.html';
 
-import { Jobs } from '../../blocks/Jobs';
 import { BaseForm } from "../../BaseForm";
-import { Departments } from '../../blocks/Departments';
+import { Sorter } from '../../utils/Sorter';
 import { Employees as EmployeeBlock } from "../../blocks/Employees";
-import { DatabaseResponse, EventType, formevent, FormEvent } from 'forms42core';
 
 
 export class Employees extends BaseForm
 {
+	private sorter:Sorter = null;
 	private emp:EmployeeBlock = new EmployeeBlock(this,"Employees");
 
 	constructor()
@@ -28,48 +36,14 @@ export class Employees extends BaseForm
 		super(content);
 		this.title = "Employees";
 
-		this.emp.setListOfValues(Jobs.getJobLov(),["job_id","job_title"]);
-		this.emp.setListOfValues(Departments.getDepartmentLov(),["department_id","department_name"]);
+		this.sorter = new Sorter(this.emp,"last_name");
+
+		this.emp.setJobLov(["job_id","job_title"]);
+		this.emp.setDepartmentLov(["department_id","department_name"]);
 	}
 
-	@formevent({type: EventType.OnFetch})
-	public async getDerivedFields() : Promise<boolean>
+	public sort(field:string) : void
 	{
-		await this.emp.lookupJob("job_title");
-		await this.emp.lookupDepartment("department_name");
-		return(true);
-	}
-
-	@formevent({type: EventType.OnNewRecord})
-	public async setDefaults() : Promise<boolean>
-	{
-		this.emp.setValue("hire_date",new Date());
-		return(true);
-	}
-
-	@formevent({type: EventType.WhenValidateField, field: "salary"})
-	public async validateSalary() : Promise<boolean>
-	{
-		return(this.emp.validateSalary());
-	}
-
-	@formevent({type: EventType.WhenValidateField, field: "job_id"})
-	public async validateJob(event:FormEvent) : Promise<boolean>
-	{
-		return(this.emp.validateJob(event,"job_title"));
-	}
-
-	@formevent({type: EventType.WhenValidateField, field: "department_id"})
-	public async validateDepatment(event:FormEvent) : Promise<boolean>
-	{
-		return(this.emp.validateDepartment(event,"department_name"));
-	}
-
-	@formevent({type: EventType.PostInsert})
-	public async setPrimaryKey() : Promise<boolean>
-	{
-		let response:DatabaseResponse = this.emp.getRecord().response;
-		this.emp.setValue("employee_id",response.getValue("employee_id"));
-		return(true);
+		this.sorter.column = field;
 	}
 }

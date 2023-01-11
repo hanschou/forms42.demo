@@ -36,6 +36,7 @@
 .form-area
 {
 	position: relative;
+	background-color: white;
 }
 
 .canvas
@@ -88,34 +89,31 @@ tr td span:hover
 
 .menu-left
 {
+	width:0px;
 	height: 100%;
 	transition: 0.5s;
+	background-color: white;
 	border-right: 1px solid black;
 }
 
 .left-menu-container
 {
-	margin: 5px;
-	padding: 10px;
-	display: none;
+	display: block;
 	cursor: pointer;
-	min-width: 100px;
 	text-align: left;
-	border-radius: 0;
-	transition: all 5s ease;
-	width: fit-content;
 	text-decoration: none;
 	background: transparent;
 }
 
 .menu-item
 {
-	display: block;
 	font-size: 13px;
 	transition: 0.3s;
 	margin-top: 15px;
+	user-select: none;
 	margin-left: -15px;
 	background: white;
+	display: inline-block;
 }
 
 .link-item
@@ -123,6 +121,7 @@ tr td span:hover
 	display: block;
 	font-size: 13px;
 	margin-top: 15px;
+	user-select: none;
 	margin-left: -15px;
 }
 
@@ -134,8 +133,9 @@ tr td span:hover
 
 .left-menu-container .menu-items
 {
-	padding-left:10px;
 	transition: 0.3s;
+	margin-left:10px;
+	padding-left:10px;
 }
 
 .left-menu-container  .menu-item:before
@@ -523,7 +523,7 @@ div[name="date-picker"]
 .topbar .menu-item
 {
 	margin:0;
-	padding:0 10px;
+	padding:0 13px;
 	cursor: default;
 	font-weight: bold;
 	position: relative;
@@ -578,7 +578,36 @@ div[name="date-picker"]
 	text-align: center;
 	font-weight: normal;
 	background-color: transparent;
+}
 
+.topbar .menu-items .menu-items .link-item .hint-text
+{
+	width:30px;
+	right: -40px;
+	padding: 5px;
+	color:white;
+	position: absolute;
+	text-align: center;
+	visibility: hidden;
+	background-color: black;
+}
+
+.topbar .menu-items .menu-items .link-item .hint-text:after
+{
+	top: 30%;
+	right: 100%;
+	content: '';
+	display: block;
+	margin-left: -5px;
+	border-width: 5px;
+	position: absolute;
+	border-style: solid;
+	border-color: transparent black transparent transparent;
+}
+
+.topbar .menu-items .menu-items .link-item:hover .hint-text
+{
+	visibility: visible;
 }
 
 .topbar .menu-items .menu-items .link-item:hover a:not(.disabled)
@@ -593,21 +622,9 @@ div[name="date-picker"]
 	padding: 10px 15px;
 }
 
-@keyframes moveInLeft
-{
-	0%
-	{
-		transform:translateX(-200px);
-	}
-	100%
-	{
-		transform: translate(0);
-	}
-}
-
 .disabled
 {
-	color: #dddddd;
+	color: #ababab;
 }
 
 label[for="username"],
@@ -632,7 +649,7 @@ input[name="username"]
 
 button
 {
-	font-size: 15px;
+	font-size: 12px;
 	border-radius: 15px;
 }
 
