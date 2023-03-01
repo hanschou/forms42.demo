@@ -20,7 +20,7 @@
 */
 
 import { FormsModule } from './FormsModule';
-import { Form, View, EventType, KeyMap } from 'forms42core';
+import { Form, View, EventType } from 'forms42core';
 
 
 export class BaseForm extends Form
@@ -29,11 +29,14 @@ export class BaseForm extends Form
 	private view:View = null;
 	public title:string = null;
 	private static forms:number = 0;
-	private static keyclose:KeyMap = new KeyMap({key: 'w', ctrl: true});
 
 	constructor(content:string)
 	{
 		super(content);
+
+		this.moveable = true;
+		this.resizable = true;
+
 		this.id = "f" + ++BaseForm.forms;
 		this.addEventListener(this.oninit,{type: EventType.PostViewInit});
 	}

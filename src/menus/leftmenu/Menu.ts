@@ -43,11 +43,17 @@ export class Menu extends MenuComponent
 
 	}
 
-	public hide() : void
+	public async hide() : Promise<void>
 	{
 		this.displayed = false;
 		this.container.style.minWidth = "0px";
 		this.container.classList.remove("menu-left-open");
+	}
+
+	public display() : void
+	{
+		this.container.style.minWidth = "150px";
+		this.container.classList.add("menu-left-open");
 	}
 
 	public togglemenu() : void

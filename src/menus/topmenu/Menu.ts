@@ -157,16 +157,14 @@ export class Menu extends MenuComponent
 	}
 
 	@formevent([
-		{type: EventType.PreInsert},
-		{type: EventType.PreUpdate},
-		{type: EventType.PreDelete},
-		{type: EventType.OnRecordLocked}
+		{type: EventType.OnNewRecord},
+		{type: EventType.OnTransaction}
 	])
 	public async onTransactionStart(event:FormEvent) : Promise<boolean>
 	{
 		let entry:MenuEntry = null;
 
-		if (event.form.getBlock(event.block)?.isControlBlock())
+		if (event.form?.getBlock(event.block)?.isControlBlock())
 			return(true);
 
 		entry = await this.findEntry("/topbar/transaction");

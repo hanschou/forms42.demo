@@ -55,7 +55,7 @@ export class Employees extends Block
 
 		field = "job_title";
 
-		if (this.getFieldNames().includes(field))
+		if (this.hasField(field))
 		{
 			code = this.getValue("job_id");
 
@@ -67,7 +67,7 @@ export class Employees extends Block
 
 		field = "department_name";
 
-		if (this.getFieldNames().includes(field))
+		if (this.hasField(field))
 		{
 			code = this.getValue("department_id");
 
@@ -90,6 +90,12 @@ export class Employees extends Block
 			return(true);
 
 		let limit:number[] = await JobTable.getSalaryLimit(code);
+
+		if (limit[0] != null)
+		{
+			this.setValid("salary",true);
+			this.setValid("job_id",true);
+		}
 
 		if (salary < limit[0]*0.75 || salary > 1.25*limit[1])
 		{
@@ -129,11 +135,16 @@ export class Employees extends Block
 		let code:string = this.getValue("job_id");
 
 		if (code == null)
-			return(false);
+		{
+			if (this.hasField(field))
+				this.setValue(field,null);
+
+			return(true);
+		}
 
 		let title:string = await JobTable.getTitle(code);
 
-		if (this.getFieldNames().includes(field))
+		if (this.hasField(field))
 			this.setValue(field,title);
 
 		if (event.type == EventType.WhenValidateField && !this.queryMode())
@@ -155,12 +166,18 @@ export class Employees extends Block
 	{
 		let field:string = "department_name";
 		let code:string = this.getValue("department_id");
-		let title:string = await DepartmentTable.getTitle(code);
 
 		if (code == null)
-			return(false);
+		{
+			if (this.hasField(field))
+				this.setValue(field,null);
 
-		if (this.getFieldNames().includes(field))
+			return(true);
+		}
+
+		let title:string = await DepartmentTable.getTitle(code);
+
+		if (this.hasField(field))
 			this.setValue(field,title);
 
 		if (event.type == EventType.WhenValidateField && !this.queryMode())

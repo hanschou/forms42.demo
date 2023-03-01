@@ -4,28 +4,32 @@
 <div style="width: 1000px;"></div>
 
 <div class="form">
-	<table class="block">
-		<tr>
-			<th></th>
-			<th onclick="this.sort('dept','department_id')">Id</th>
-			<th onclick="this.sort('dept','department_name')">Name</th>
-			<th>Manager</th>
-			<th>Location</th>
-		</tr>
-		<tr class="row" foreach="row in 0..2">
-			<td class="indicator"><span from="Departments" row="$row" type="row-indicator"></span></td>
+	<div class="block">
+		<div class="needle blue"></div>
+			<table>
+				<tr>
+					<th></th>
+					<th onclick="this.sort('dept','department_id')">Id</th>
+					<th onclick="this.sort('dept','department_name')">Name</th>
+					<th>Manager</th>
+					<th>Location</th>
+				</tr>
+				<tr class="row" foreach="row in 0..2">
+					<td class="indicator"><span from="Departments" row="$row" type="row-indicator"></span></td>
 
-			<td><input name="department_id" 		from="Departments" row="$row" size="6"  integer></td>
-			<td><input name="department_name" 	from="Departments" row="$row" size="20" initcap></td>
-			<td><input name="manager" 				from="Departments" row="$row" size="20" derived readonly query="false"></td>
-			<td><input name="location" 			from="Departments" row="$row" size="30" derived readonly query="false"></td>
-		</tr>
-	</table>
+					<td><input name="department_id" 		from="Departments" row="$row" size="6"  integer></td>
+					<td><input name="department_name" 	from="Departments" row="$row" size="20" initcap></td>
+					<td><input name="manager" 				from="Departments" row="$row" size="20" derived readonly query="false"></td>
+					<td><input name="location" 			from="Departments" row="$row" size="30" derived readonly query="false"></td>
+				</tr>
+		</table>
+	</div>
 </div>
 
 <div class="form" style="display:flex; flex-wrap: wrap;">
-	<div >
-		<table class="block">
+	<div class="block">
+		<div class="needle green"></div>
+		<table>
 			<tr class="row">
 				<th></th>
 				<th>
@@ -68,12 +72,13 @@
 		</table>
 	</div>
 
-	<div style="display:flex; align-items: stretch;">
-		<table class="block" style="display:flex; align-items: center;">
+	<div class="block" style="display:flex; align-items: stretch;">
+		<div class="needle red"></div>
+		<table style="display:flex; align-items: center;">
 			<tr>
 				<td>Salary</td>
 				<td>
-					<input name="salary" from="Employees" size="8" integer>
+					<input name="salary" from="Employees" size="8" integer>&euro;
 				</td>
 			</tr>
 			<tr>
@@ -86,7 +91,7 @@
 			<tr>
 				<td>Job</td>
 				<td style="display:inline-flex">
-					<input name="job_id" from="Employees" size="10" upper>
+					<input name="job_id" from="Employees" size="10" upper required>
 					<input name="job_title" from="Employees" size="20" derived readonly query="false">
 					<span onclick="this.showListOfValues('Employees','job_id')">&#x2807;</span>
 				</td>

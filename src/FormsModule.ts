@@ -27,6 +27,7 @@ import { PageFooter } from './fragments/PageFooter';
 
 import { Menu as TopMenu } from './menus/topmenu/Menu';
 import { Menu as LeftMenu } from './menus/leftmenu/Menu';
+import { Menu as RightClick } from './menus/rightclick/Menu';
 
 import { Fields } from './fields/Fields';
 import { Jobs } from './forms/jobs/Jobs';
@@ -41,7 +42,7 @@ import { AppHeader } from './tags/AppHeader';
 import { LinkMapper } from './fields/LinkMapper';
 import { TrueFalseMapper } from './fields/TrueFalseMapper';
 
-import { FormsPathMapping, FormsModule as FormsCoreModule, KeyMap, FormEvent, EventType, DatabaseConnection as Connection, FormProperties, UsernamePassword, Form } from 'forms42core';
+import { FormsPathMapping, FormsModule as FormsCoreModule, KeyMap, FormEvent, EventType, DatabaseConnection as Connection, FormProperties, UsernamePassword, Form, MouseMap } from 'forms42core';
 
 @FormsPathMapping(
 	[
@@ -95,7 +96,6 @@ export class FormsModule extends FormsCoreModule
 		this.topmenu = new TopMenu();
 		this.leftmenu = new LeftMenu();
 
-		this.OpenURLForm();
 		this.updateKeyMap(keymap);
 
 		Connection.TRXTIMEOUT = 240;
@@ -105,6 +105,11 @@ export class FormsModule extends FormsCoreModule
 
 		this.addEventListener(this.close,{type: EventType.Key, key: keymap.close});
 		this.addEventListener(this.login,{type: EventType.Key, key: keymap.login});
+
+		this.addEventListener(this.showTopMenu,{type: EventType.Key, key: keymap.topmenu});
+		this.addEventListener(this.showLeftMenu,{type: EventType.Key, key: keymap.leftmenu});
+
+		// this.addEventListener(this.rightmenu,{type: EventType.Mouse, mouse: MouseMap.contextmenu},);
 
 		this.addEventListener(this.open,
 		[
@@ -117,6 +122,8 @@ export class FormsModule extends FormsCoreModule
 			{type:EventType.Key,key:this.departments},
 			{type:EventType.Key,key:this.masterdetail}
 		]);
+
+		this.OpenURLForm();
 	}
 
 	private async open(event:FormEvent) : Promise<boolean>
@@ -192,10 +199,34 @@ export class FormsModule extends FormsCoreModule
 
 		return(true);
 	}
+
+	public async showTopMenu() : Promise<boolean>
+	{
+		this.topmenu.focus();
+		return(true);
+	}
+
+	public async showLeftMenu() : Promise<boolean>
+	{
+		this.leftmenu.display();
+		this.leftmenu.focus();
+		return(true);
+	}
+
+	private async rightmenu(event: FormEvent) : Promise<boolean>
+	{
+
+		let mouseevent: MouseEvent = this.getJSEvent() as MouseEvent;
+
+		new RightClick(mouseevent,event);
+		return(true);
+	}
 }
 
 export class keymap extends KeyMap
 {
 	public static close:KeyMap = new KeyMap({key: 'w', ctrl: true});
 	public static login:KeyMap = new KeyMap({key: 'l', ctrl: true});
+	public static topmenu:KeyMap = new KeyMap({key: 'm', ctrl: true});
+	public static leftmenu:KeyMap = new KeyMap({key: 'f', ctrl: true});
 }
