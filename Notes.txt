@@ -1,9 +1,21 @@
 FilterEditor
 Cyclic master detail
-find . -name '*.php' | xargs wc -l
+find ../core/src -name '*.ts' | xargs wc -l
+
+undo/save -> still transaction
+
+insert="inherit"
+update="inherit"
+
+RecordStateIndicator
+LOV lock screen
+
 
 *** Jonas ***
 
+LeftMenu hide doesn't work
+kigge på text typer.
+kigge på rightclick.
 
 *************
 
