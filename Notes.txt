@@ -2,20 +2,18 @@ FilterEditor
 Cyclic master detail
 find ../core/src -name '*.ts' | xargs wc -l
 
-undo/save -> still transaction
+table optional in DatabaseTable
 
 insert="inherit"
 update="inherit"
 
 RecordStateIndicator
-LOV lock screen
 
 
 *** Jonas ***
 
-LeftMenu hide doesn't work
-kigge på text typer.
 kigge på rightclick.
+css is fucked up
 
 *************
 
