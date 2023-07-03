@@ -19,6 +19,7 @@
   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+import { BaseForm } from './BaseForm';
 import { Minimized } from './Minimized';
 
 import { FormHeader } from './fragments/FormHeader';
@@ -200,7 +201,7 @@ export class FormsModule extends FormsCoreModule
 		{
 			if (!await FormsModule.DATABASE.connect(form.username,form.password))
 			{
-				await FormsModule.DATABASE.sleep(2000);
+				await FormsModule.sleep(2000);
 
 				let forms:Form[] = this.getRunningForms();
 
@@ -210,8 +211,11 @@ export class FormsModule extends FormsCoreModule
 						await forms[i].close(true);
 				}
 
-				await this.login();
+				this.login();
+				return(false);
 			}
+
+			BaseForm.connectNeddle();
 		}
 
 		return(true);
@@ -225,7 +229,6 @@ export class FormsModule extends FormsCoreModule
 
 	public async showLeftMenu() : Promise<boolean>
 	{
-		this.leftmenu.display();
 		this.leftmenu.focus();
 		return(true);
 	}
