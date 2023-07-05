@@ -45,6 +45,8 @@ import { TrueFalseMapper } from './fields/TrueFalseMapper';
 
 import { KeyMapPage, FormsPathMapping, FormsModule as FormsCoreModule, KeyMap, FormEvent, EventType, DatabaseConnection as Connection, FormProperties, UsernamePassword, Form, AlertForm, MouseMap } from 'forms42core';
 
+import { Lesson01 } from './lesson01/Lesson01';
+
 @FormsPathMapping(
 	[
 		{class: Fields, path: "/forms/fields"},
@@ -55,6 +57,8 @@ import { KeyMapPage, FormsPathMapping, FormsModule as FormsCoreModule, KeyMap, F
 		{class: Employees, path: "/forms/employees"},
 		{class: Departments, path: "/forms/departments"},
 		{class: MasterDetail, path: "/forms/masterdetail"},
+
+		{class: Lesson01, path: "lesson01"},
 
 		{class: PhoneBookMembased, path: "/forms/phonebook"},
 
