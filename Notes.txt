@@ -2,18 +2,19 @@ FilterEditor
 Cyclic master detail
 find ../core/src -name '*.ts' | xargs wc -l
 
-table optional in DatabaseTable
-
 insert="inherit"
 update="inherit"
 
 RecordStateIndicator
+Menu options (openroot)
+
+Propagate rightclick
 
 
 *** Jonas ***
 
 kigge på rightclick.
-css is fucked up
+Alert cannot resize horizontally
 
 *************
 
